@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aposta de Sorte</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #b3b3b3;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #a24f4f;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            width: 300px;
+        }
+        h1 {
+            color: #f2ca3e;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #1e1e1e;
+            color: #f2ca3e;
+            font-size: 1.5em;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+        button:hover:enabled {
+            background-color: #333;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: #f2ca3e;
+        }
+        #balance-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            background-color: #cb6f6f;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 1.5em;
+            color: #f2ca3e;
+        }
+        #balance-container img {
+            width: 24px;
+            height: 24px;
+        }
+        #pix-container {
+            margin-top: 20px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+        #pix-container p {
+            font-size: 1.2em;
+            color: #f2ca3e;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Aposta de Sorte</h1>
+        <div class="button-container" id="buttons"></div>
+        <div id="result"></div>
+        <div id="balance-container">
+            <img src="dollar-icon.png" alt="Dollar Icon">
+            <div id="balance"></div>
+        </div>
+        <div id="pix-container">
+            <p>Saldo negativo! Deseja fazer um Pix para continuar jogando?</p>
+            <button id="pix-button">Fazer Pix de R$ 100</button>
+        </div>
+    </div>
+
+    <script>
+        let balance = 100;  // Saldo inicial do jogador
+        const balanceDiv = document.getElementById('balance');
+        const resultDiv = document.getElementById('result');
+        const pixContainer = document.getElementById('pix-container');
+        const pixButton = document.getElementById('pix-button');
+        const buttonsDiv = document.getElementById('buttons');
+
+        balanceDiv.innerHTML = `Saldo: R$ ${balance}`;
+
+        pixButton.addEventListener('click', () => {
+            balance += 100;
+            balanceDiv.innerHTML = `Saldo: R$ ${balance}`;
+            pixContainer.style.display = 'none';
+            generateButtons();
+        });
+
+        function generateButtons() {
+            const correctNumber = Math.floor(Math.random() * 100) + 1;
+            let wrongNumber1, wrongNumber2;
+
+            do {
+                wrongNumber1 = Math.floor(Math.random() * 100) + 1;
+            } while (wrongNumber1 === correctNumber);
+
+            do {
+                wrongNumber2 = Math.floor(Math.random() * 100) + 1;
+            } while (wrongNumber2 === correctNumber || wrongNumber2 === wrongNumber1);
+
+            const numbers = [correctNumber, wrongNumber1, wrongNumber2];
+            numbers.sort(() => Math.random() - 0.5);
+
+            buttonsDiv.innerHTML = '';
+            numbers.forEach(num => {
+                const button = document.createElement('button');
+                button.textContent = num;
+                button.onclick = () => playGame(num, correctNumber);
+                button.disabled = balance <= 0;  // Desabilita os botões se o saldo for menor ou igual a zero
+                buttonsDiv.appendChild(button);
+            });
+        }
+
+        function playGame(playerNumber, correctNumber) {
+            if (balance <= 0) {
+                alert("Saldo insuficiente para jogar. Você pode fazer um Pix para continuar.");
+                return;
+            }
+
+            if (playerNumber === correctNumber) {
+                resultDiv.innerHTML = `<strong>Parabéns!</strong> Você escolheu ${playerNumber} que é o número correto. Você ganhou R$ 100!`;
+                balance += 100;
+            } else {
+                resultDiv.innerHTML = `Você escolheu ${playerNumber} e o número correto era ${correctNumber}. Você perdeu R$ 100.`;
+                balance -= 100;
+            }
+
+            balanceDiv.innerHTML = `Saldo: R$ ${balance}`;
+
+            if (balance <= 0) {
+                pixContainer.style.display = 'flex';
+                Array.from(buttonsDiv.children).forEach(button => button.disabled = true);  // Desabilita os botões
+            } else {
+                generateButtons();
+            }
+        }
+
+        generateButtons();
+    </script>
+</body>
+</html>
